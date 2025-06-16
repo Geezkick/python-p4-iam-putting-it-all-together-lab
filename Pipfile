@@ -16,6 +16,7 @@ pytest = "*"
 flask-bcrypt = "*"
 marshmallow-sqlalchemy = "*"
 flask-session = "*"
+flask-cors = "*"
 
 [dev-packages]
 

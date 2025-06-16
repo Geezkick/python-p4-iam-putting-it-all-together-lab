@@ -4,9 +4,12 @@ from sqlalchemy.exc import IntegrityError
 from config import app, db, api
 from models import User, Recipe
 from flask_session import Session
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+    CORS(app)
+except ImportError:
+    print("Warning: flask-cors not installed. CORS support disabled.")
 
-CORS(app)
 Session(app)
 
 class Signup(Resource):
