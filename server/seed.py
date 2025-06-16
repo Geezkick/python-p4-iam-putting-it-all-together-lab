@@ -1,4 +1,4 @@
-from app import app, db
+from config import app, db
 from models import User, Recipe
 
 with app.app_context():

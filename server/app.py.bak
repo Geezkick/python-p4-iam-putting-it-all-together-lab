@@ -4,9 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from config import app, db, api
 from models import User, Recipe
 from flask_session import Session
-from flask_cors import CORS
 
-CORS(app)
 Session(app)
 
 class Signup(Resource):
