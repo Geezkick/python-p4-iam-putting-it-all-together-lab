@@ -1,63 +1,27 @@
-#!/usr/bin/env python3
-
-from random import randint, choice as rc
-
-from faker import Faker
-
-from app import app
-from models import db, Recipe, User
-
-fake = Faker()
+from server.app import app
+from server.config import db, bcrypt
+from server.models import User, Recipe
 
 with app.app_context():
+    db.drop_all()
+    db.create_all()
 
-    print("Deleting all records...")
-    Recipe.query.delete()
-    User.query.delete()
-
-    fake = Faker()
-
-    print("Creating users...")
-
-    # make sure users have unique usernames
-    users = []
-    usernames = []
-
-    for i in range(20):
-        
-        username = fake.first_name()
-        while username in usernames:
-            username = fake.first_name()
-        usernames.append(username)
-
-        user = User(
-            username=username,
-            bio=fake.paragraph(nb_sentences=3),
-            image_url=fake.url(),
-        )
-
-        user.password_hash = user.username + 'password'
-
-        users.append(user)
-
-    db.session.add_all(users)
-
-    print("Creating recipes...")
-    recipes = []
-    for i in range(100):
-        instructions = fake.paragraph(nb_sentences=8)
-        
-        recipe = Recipe(
-            title=fake.sentence(),
-            instructions=instructions,
-            minutes_to_complete=randint(15,90),
-        )
-
-        recipe.user = rc(users)
-
-        recipes.append(recipe)
-
-    db.session.add_all(recipes)
-    
+    user = User(
+        username='testuser',
+        image_url='https://example.com/image.jpg',
+        bio='Test bio'
+    )
+    user.password_hash = 'testpassword'
+    db.session.add(user)
     db.session.commit()
-    print("Complete.")
+
+    recipe = Recipe(
+        title='Test Recipe',
+        instructions='This is a test recipe with more than 50 characters to satisfy the validation requirement.',
+        minutes_to_complete=30,
+        user_id=user.id
+    )
+    db.session.add(recipe)
+    db.session.commit()
+
+    print('Database seeded!')

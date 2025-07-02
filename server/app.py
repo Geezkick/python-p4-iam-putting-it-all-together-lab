@@ -1,33 +1,40 @@
-#!/usr/bin/env python3
+from flask import Flask, session
+from flask_migrate import Migrate
+from flask_restful import Api
+from dotenv import load_dotenv
+from server.config import db, bcrypt
+import os
 
-from flask import request, session
-from flask_restful import Resource
-from sqlalchemy.exc import IntegrityError
+load_dotenv()
 
-from config import app, db, api
-from models import User, Recipe
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
 
-class Signup(Resource):
-    pass
+    db.init_app(app)
+    bcrypt.init_app(app)
+    migrate = Migrate(app, db)
+    api = Api(app)
 
-class CheckSession(Resource):
-    pass
+    # Import models for Flask-Migrate
+    from server.models import User, Recipe
 
-class Login(Resource):
-    pass
+    try:
+        from server.resources import Signup, CheckSession, Login, Logout, RecipeIndex
+        api.add_resource(Signup, '/signup')
+        api.add_resource(CheckSession, '/check_session')
+        api.add_resource(Login, '/login')
+        api.add_resource(Logout, '/logout')
+        api.add_resource(RecipeIndex, '/recipes')
+    except ImportError as e:
+        print(f"ImportError in app.py: {e}")
+        raise
 
-class Logout(Resource):
-    pass
+    return app
 
-class RecipeIndex(Resource):
-    pass
-
-api.add_resource(Signup, '/signup', endpoint='signup')
-api.add_resource(CheckSession, '/check_session', endpoint='check_session')
-api.add_resource(Login, '/login', endpoint='login')
-api.add_resource(Logout, '/logout', endpoint='logout')
-api.add_resource(RecipeIndex, '/recipes', endpoint='recipes')
-
+app = create_app()
 
 if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    app.run(debug=True)
